@@ -11,21 +11,22 @@ import "hardhat/console.sol";
 
 
 contract Futur is ERC721URIStorage, PullPayment, Ownable {
-		using Strings for uint256;
+		using Strings for uint;
     using Counters for Counters.Counter;
+
     Counters.Counter private _tokenIds;
 
-    uint256 public constant TOTAL_SUPPLY = 2;
+    uint public constant TOTAL_SUPPLY = 1;
 
     uint256 public constant MINT_PRICE = 0.001 ether;
 
-    constructor() ERC721("Futur", "FT3") {
-      console.log("Here is an NFT well deployed !");
-    }
+    constructor() ERC721("Futur", "FT3") {}
+
+    mapping (uint256 => address) public tokenToOwner;
 
     function mint() public payable returns (uint256) {
       require(_tokenIds.current() < TOTAL_SUPPLY);
-      //require(msg.value == MINT_PRICE);
+      require(msg.value == MINT_PRICE);
       _tokenIds.increment();
       uint256 newTokenId = _tokenIds.current();
       _safeMint(msg.sender, newTokenId);
@@ -33,19 +34,11 @@ contract Futur is ERC721URIStorage, PullPayment, Ownable {
       return newTokenId;
     }
 
-    // Function to receive Ether. msg.data must be empty
-    receive() external payable {}
 
-    // Fallback function is called when msg.data is not empty
-    fallback() external payable {}
-
-    function getBalance() public view returns (uint) {
-        return address(this).balance;
-    }
-
-    function whithdrawPayments(address payable payee) public payable onlyOwner {
-        require(payee != address(0), "Wrong Payee");
-        (bool sent, bytes memory data) = payee.call{value: address(this).balance}("");
-        require(sent, "Failed to send Ether");
+    function whithdrawPayments() public payable onlyOwner {
+        uint balance = address(this).balance;
+        require(balance > 0, "No ether, can't withdraw");
+        (bool success, ) = (msg.sender).call{value: balance}("");
+        require(success, "Transfer failed.");
     }
 }
