@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/security/PullPayment.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "hardhat/console.sol";
 
 
 contract Futur is ERC721URIStorage, PullPayment, Ownable {
@@ -38,7 +37,7 @@ contract Futur is ERC721URIStorage, PullPayment, Ownable {
     function whithdrawPayments() public payable onlyOwner {
         uint balance = address(this).balance;
         require(balance > 0, "No ether, can't withdraw");
-        (bool success, ) = (msg.sender).call{value: balance}("");
+        (bool success, ) = (msg.sender).call{value: address(this).balance}("");
         require(success, "Transfer failed.");
     }
 }
